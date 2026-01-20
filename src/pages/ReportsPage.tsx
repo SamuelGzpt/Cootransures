@@ -6,7 +6,7 @@ const ReportsPage: React.FC = () => {
     const [reports, setReports] = useState<Report[]>([]);
 
     useEffect(() => {
-        setReports(reportService.fetchReports());
+        reportService.fetchReports().then(setReports);
     }, []);
 
     return (

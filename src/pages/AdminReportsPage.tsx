@@ -11,13 +11,14 @@ const AdminReportsPage: React.FC = () => {
 
     useEffect(() => {
         if (isAuthenticated) {
-            setReports(reportService.fetchReports());
+            reportService.fetchReports().then(setReports);
         }
     }, [isAuthenticated]);
 
     const handleLogin = (e: React.FormEvent) => {
         e.preventDefault();
-        // Simple client-side security as requested
+        // In a real scenario, call await reportService.login(password)
+        // For now, aligning with backend simple check
         if (password === 'admin123') {
             setIsAuthenticated(true);
             setError('');
@@ -31,20 +32,22 @@ const AdminReportsPage: React.FC = () => {
             setIsUploading(true);
             const file = e.target.files[0];
             await reportService.uploadReport(file);
-            setReports(reportService.fetchReports());
+            const latestReports = await reportService.fetchReports();
+            setReports(latestReports);
             setIsUploading(false);
             // Reset input value to allow uploading the same file again if needed
             e.target.value = '';
         }
     };
 
-    const handleDelete = (id: string) => {
+    const handleDelete = async (id: string) => {
         if (confirm('¿Estás seguro de eliminar este informe?')) {
-            // Mock delete functionality - in a real app this would call the service
-            const updatedReports = reports.filter(r => r.id !== id);
-            setReports(updatedReports);
-            // Update storage mock
-            localStorage.setItem('cootransures_reports', JSON.stringify(updatedReports));
+            const success = await reportService.deleteReport(id);
+            if (success) {
+                setReports(await reportService.fetchReports());
+            } else {
+                alert('Error eliminando el informe');
+            }
         }
     };
 
