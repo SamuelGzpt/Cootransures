@@ -5,6 +5,8 @@ const rateLimit = require('express-rate-limit');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const bcrypt = require('bcrypt'); // Import bcrypt
+const db = require('./db/db'); // Import DB connection
 require('dotenv').config();
 
 const app = express();
@@ -90,78 +92,137 @@ const upload = multer({
 });
 
 // Serve uploaded files statically
-// Note: In a high security app, you might want to authenticate this route too
 app.use('/uploads', express.static(uploadDir));
-
-// --- Mock Database (In-Memory) for now ---
-let reports = [
-    // Example: { id: '1', name: 'Informe 2024.pdf', date: '2024-01-20', url: '/uploads/example.pdf' }
-];
 
 // --- Routes ---
 
 // GET /api/reports: Public
-app.get('/api/reports', (req, res) => {
-    res.json(reports);
+app.get('/api/reports', async (req, res) => {
+    try {
+        // Fetch active reports from DB, ordered by newest first
+        const result = await db.query('SELECT * FROM reports WHERE is_active = TRUE ORDER BY uploaded_at DESC');
+
+        // Map DB fields to frontend expected format
+        const reports = result.rows.map(row => ({
+            id: row.id,
+            name: row.title || row.filename,
+            date: new Date(row.uploaded_at).toLocaleDateString(),
+            url: row.file_path || `/uploads/${row.filename}`
+        }));
+
+        res.json(reports);
+    } catch (err) {
+        console.error('Error fetching reports:', err);
+        res.status(500).json({ message: 'Error interno del servidor' });
+    }
 });
 
 // POST /api/login: Admin Check with Strict Rate Limit
-app.post('/api/login', loginLimiter, (req, res) => {
-    const { password } = req.body;
+app.post('/api/login', loginLimiter, async (req, res) => {
+    const { username, password } = req.body;
 
-    // Check against env variable
-    if (password === (process.env.ADMIN_PASSWORD || 'admin123')) {
-        res.json({ success: true, token: API_SECRET });
-    } else {
-        res.status(401).json({ success: false, message: 'Invalid password' });
+    if (!username || !password) {
+        return res.status(400).json({ success: false, message: 'Faltan credenciales' });
+    }
+
+    try {
+        // 1. Find user by username
+        const result = await db.query('SELECT * FROM users WHERE username = $1', [username]);
+
+        if (result.rows.length === 0) {
+            // Use generic message for security
+            return res.status(401).json({ success: false, message: 'Credenciales inválidas' });
+        }
+
+        const user = result.rows[0];
+
+        // 2. Compare password with bcrypt
+        const match = await bcrypt.compare(password, user.password_hash);
+
+        if (match) {
+            // 3. Return token
+            res.json({ success: true, token: API_SECRET });
+        } else {
+            res.status(401).json({ success: false, message: 'Credenciales inválidas' });
+        }
+
+    } catch (err) {
+        console.error('Login error:', err);
+        res.status(500).json({ success: false, message: 'Error interno del servidor' });
     }
 });
 
 // POST /api/reports: Protected Upload
-app.post('/api/reports', authenticateToken, upload.single('report'), (req, res) => {
+app.post('/api/reports', authenticateToken, upload.single('report'), async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).send('No file uploaded or invalid file type.');
         }
 
-        const newReport = {
-            id: crypto.randomUUID(),
-            name: req.file.originalname,
-            date: new Date().toLocaleDateString(),
-            // URL to access the file
-            url: `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`
+        const title = req.body.title || req.file.originalname;
+        const filename = req.file.filename;
+        const filePath = `${req.protocol}://${req.get('host')}/uploads/${filename}`;
+        const size = req.file.size;
+
+        // Insert into DB
+        const insertQuery = `
+            INSERT INTO reports (title, filename, file_path, size_bytes)
+            VALUES ($1, $2, $3, $4)
+            RETURNING *
+        `;
+        const values = [title, filename, filePath, size];
+        const result = await db.query(insertQuery, values);
+        const savedReport = result.rows[0];
+
+        const responseReport = {
+            id: savedReport.id,
+            name: savedReport.title,
+            date: new Date(savedReport.uploaded_at).toLocaleDateString(),
+            url: savedReport.file_path
         };
 
-        reports.unshift(newReport);
-        res.json(newReport);
+        res.json(responseReport);
     } catch (error) {
+        console.error('Upload Error:', error);
         res.status(500).send(error.message);
     }
 });
 
 // DELETE /api/reports/:id: Protected
-app.delete('/api/reports/:id', authenticateToken, (req, res) => {
+app.delete('/api/reports/:id', authenticateToken, async (req, res) => {
     const { id } = req.params;
-    const reportIndex = reports.findIndex(r => r.id === id);
 
-    if (reportIndex > -1) {
-        const report = reports[reportIndex];
-        // Optional: Delete file from disk
-        const filename = report.url.split('/').pop();
-        const filePath = path.join(uploadDir, filename);
+    try {
+        // 1. Get file info first
+        const findQuery = 'SELECT * FROM reports WHERE id = $1';
+        const findResult = await db.query(findQuery, [id]);
+
+        if (findResult.rows.length === 0) {
+            return res.status(404).json({ success: false, message: 'Report not found' });
+        }
+
+        const report = findResult.rows[0];
+
+        // 2. Soft delete or Hard delete? Let's do Hard delete to clean up file
+        const deleteQuery = 'DELETE FROM reports WHERE id = $1';
+        await db.query(deleteQuery, [id]);
+
+        // 3. Delete file from disk
+        const filePath = path.join(uploadDir, report.filename);
 
         if (fs.existsSync(filePath)) {
             try {
                 fs.unlinkSync(filePath);
             } catch (err) {
-                console.error('Error deleting file:', err);
+                console.error('Error deleting file from disk:', err);
+                // Continue even if file delete fails, DB record is gone
             }
         }
 
-        reports.splice(reportIndex, 1);
         res.json({ success: true });
-    } else {
-        res.status(404).json({ success: false, message: 'Report not found' });
+    } catch (err) {
+        console.error('Error deleting report:', err);
+        res.status(500).json({ success: false, message: 'Error interno del servidor' });
     }
 });
 

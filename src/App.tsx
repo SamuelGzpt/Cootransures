@@ -12,7 +12,7 @@ function App() {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/informes" element={<ReportsPage />} />
-          <Route path="/admin" element={<AdminReportsPage />} />
+          <Route path="/HiddenAdmin" element={<AdminReportsPage />} />
         </Routes>
       </Layout>
     </Router>

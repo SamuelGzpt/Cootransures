@@ -4,6 +4,7 @@ import './AdminReportsPage.css';
 
 const AdminReportsPage: React.FC = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [reports, setReports] = useState<Report[]>([]);
@@ -15,15 +16,17 @@ const AdminReportsPage: React.FC = () => {
         }
     }, [isAuthenticated]);
 
-    const handleLogin = (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
-        // In a real scenario, call await reportService.login(password)
-        // For now, aligning with backend simple check
-        if (password === 'admin123') {
+        setError('');
+
+        const result = await reportService.login(username, password);
+
+        if (result.success) {
             setIsAuthenticated(true);
-            setError('');
+            // Optionally store token for persistence
         } else {
-            setError('Contraseña incorrecta');
+            setError(result.message || 'Credenciales incorrectas');
         }
     };
 
@@ -59,8 +62,15 @@ const AdminReportsPage: React.FC = () => {
                     <p>Acceso restringido a la Jefa de Cooperativa</p>
                     <form onSubmit={handleLogin}>
                         <input
+                            type="text"
+                            placeholder="Usuario"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            className="login-input"
+                        />
+                        <input
                             type="password"
-                            placeholder="Contraseña de administrador"
+                            placeholder="Contraseña"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             className="login-input"

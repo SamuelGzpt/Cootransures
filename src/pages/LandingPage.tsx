@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import './LandingPage.css';
-import { ChevronRight, Target, Eye, ShieldCheck, Bus, Briefcase, Package } from 'lucide-react';
+import { ChevronRight, Target, Eye, ShieldCheck, Bus, Briefcase, Package, FileText } from 'lucide-react';
 import PhotoSlider from '../components/PhotoSlider';
 import ServiceSlider from '../components/ServiceSlider';
 
@@ -103,6 +103,13 @@ const LandingPage: React.FC = () => {
                             </p>
                         </div>
                     </div>
+
+                    <div style={{ marginTop: '3rem', display: 'flex', justifyContent: 'center' }}>
+                        <a href="/docs/Politicas_SARLAFT.pdf" target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <FileText size={20} />
+                            Politicas SARLAFT
+                        </a>
+                    </div>
                 </div>
             </section>
 
@@ -129,18 +136,17 @@ const LandingPage: React.FC = () => {
                     <div className="contact-info">
                         <div className="info-item">
                             <h4>Teléfonos</h4>
-                            <p>+57 320 123 4567</p>
-                            <p>+57 601 234 5678</p>
+                            <p><strong>Fijo:</strong> 604-4444903</p>
+                            <p><strong>Celular logística:</strong> 350 6618563</p>
                         </div>
                         <div className="info-item">
                             <h4>Dirección</h4>
-                            <p>Calle Principal # 12-34</p>
-                            <p>Terminal de Transportes</p>
+                            <p>Cl. 3 sur #55-44 Guayabal</p>
+                            <p>Medellín, Colombia</p>
                         </div>
                         <div className="info-item">
-                            <h4>Horarios</h4>
-                            <p>Lunes a Domingo</p>
-                            <p>5:00 AM - 9:00 PM</p>
+                            <h4>Correo electrónico</h4>
+                            <p>cootransures@hotmail.com</p>
                         </div>
                     </div>
                 </div>

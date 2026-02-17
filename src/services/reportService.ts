@@ -31,6 +31,28 @@ export const reportService = {
     }
   },
 
+  login: async (username: string, password: string): Promise<{ success: boolean; token?: string; message?: string }> => {
+    // Mock Login
+    if (USE_MOCK) {
+      if (password === 'admin123') return { success: true, token: 'mock-token' };
+      return { success: false, message: 'Contraseña incorrecta (Mock)' };
+    }
+
+    // Real Login
+    try {
+      const response = await fetch('http://localhost:3000/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Login Error:', error);
+      return { success: false, message: 'Error de conexión' };
+    }
+  },
+
   uploadReport: async (file: File): Promise<Report | null> => {
     // Si estamos en modo simulación, simulamos una subida lenta
     if (USE_MOCK) {

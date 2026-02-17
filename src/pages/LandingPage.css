@@ -1,8 +1,8 @@
 /* Hero Section */
 .hero {
-    height: 100vh;
+    min-height: 105vh;
+    /* Taller for impact and to cover gaps */
     /* Fullscreen height */
-    /* Taller for impact */
     background: linear-gradient(135deg, rgba(4, 106, 65, 0.9), rgba(3, 85, 52, 0.9)), url('../assets/Slider/FotoCarroPaisaje.jpeg');
     background-size: cover;
     background-position: center;
@@ -13,6 +13,11 @@
     margin-top: -80px;
     /* Compensate for navbar */
     padding-top: 80px;
+    border: none !important;
+    margin-bottom: -5px;
+    /* Pull next section up slightly to guarantee contact */
+    background-color: #046A41;
+    /* Fallback/Base color */
 }
 
 .hero::before {
@@ -401,9 +406,11 @@
 
 /* Contact Info */
 .contact-section {
-    background-color: var(--color-text);
-    /* Dark background */
+    /* Gradient from dark green to footer color */
+    background: linear-gradient(to bottom, #06402b 0%, #1a252f 100%);
     color: white;
+    padding-bottom: 2rem;
+    /* Less padding at bottom to merge with footer */
 }
 
 .contact-section h2 {
