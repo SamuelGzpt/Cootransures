@@ -17,8 +17,16 @@ Dependencies:
 Dev Dependencies:
 - vite: ^7.2.4 (Build Tool)
 - typescript: ~5.9.3
+- @eslint/js: ^9.39.1
 - eslint: ^9.39.1
 - @vitejs/plugin-react: ^5.1.1
+- eslint-plugin-react-hooks: ^7.0.1
+- eslint-plugin-react-refresh: ^0.4.24
+- globals: ^16.5.0
+- typescript-eslint: ^8.46.4
+- @types/node: ^24.10.1
+- @types/react: ^19.2.5
+- @types/react-dom: ^19.2.3
 
 =========================================
 SERVER (Backend)
@@ -26,6 +34,7 @@ Located in: ./server
 Install with: cd server && npm install
 =========================================
 Dependencies:
+- bcrypt: ^6.0.0 (Password Hashing)
 - cors: ^2.8.5 (Cross-Origin Resource Sharing)
 - dotenv: ^17.2.3 (Environment Variables)
 - express: ^5.2.1 (Web Framework)

@@ -12,7 +12,7 @@ const ReportsPage: React.FC = () => {
     return (
         <div className="reports-dashboard container section">
             <div className="dashboard-header public-header">
-                <h2>Informes y Balances</h2>
+                <h2>Informes</h2>
                 <p>Documentación pública de la cooperativa COOTRANSURES</p>
             </div>
 
