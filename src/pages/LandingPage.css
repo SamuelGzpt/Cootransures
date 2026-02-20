@@ -190,14 +190,24 @@
 }
 
 @media (max-width: 768px) {
+
+    /* Keep rows always horizontal — GSAP animates on the X axis */
     .photo-slider .row {
-        flex-direction: column;
-        align-items: center;
+        flex-direction: row;
     }
 
     .photo-slider .photo-item {
-        width: 80%;
-        height: 80px;
+        width: 220px;
+        height: 140px;
+    }
+
+    .photo-slider .photo-logo {
+        width: 160px;
+    }
+
+    /* Hide the bottom row on small screens to save vertical space */
+    .photo-slider .bottom-row {
+        display: none;
     }
 }
 

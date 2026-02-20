@@ -132,3 +132,23 @@
     font-size: 0.9rem;
     font-weight: 600;
 }
+
+@media (max-width: 767px) {
+    .service-content {
+        text-align: center;
+        padding: 2rem 1.5rem 1rem;
+        align-items: center;
+    }
+
+    .service-badges {
+        justify-content: center;
+    }
+
+    .slider-controls {
+        position: relative;
+        bottom: auto;
+        left: auto;
+        justify-content: center;
+        padding: 1rem 0 1.5rem;
+    }
+}
