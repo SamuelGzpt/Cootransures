@@ -5,9 +5,9 @@ import './ServiceSlider.css';
 
 // Import images
 // Import images from slider folder for better relevance
-import corporateImg from '../assets/slider/FotoCarroBlanco.jpeg';
-import touristImg from '../assets/slider/FotoCarroCascada.jpeg';
-import schoolImg from '../assets/slider/FotoTransporteEscolar.jpeg';
+import corporateImg from '../assets/Slider/FotoCarroBlanco.jpeg';
+import touristImg from '../assets/Slider/FotoCarroCascada.jpeg';
+import schoolImg from '../assets/Slider/FotoTransporteEscolar.jpeg';
 
 interface Service {
     id: number;
