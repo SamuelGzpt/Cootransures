@@ -57,10 +57,10 @@ const PhotoSlider: React.FC = () => {
     }, []);
 
     // Load logo
-    const logoUrl = new URL('../assets/slider/LOGO_final.png', import.meta.url).href;
+    const logoUrl = new URL('../assets/Slider/LOGO_final.png', import.meta.url).href;
 
     // Load all jpeg images from the slider folder
-    const imagesGlob = import.meta.glob('../assets/slider/*.jpeg', { eager: true, as: 'url' });
+    const imagesGlob = import.meta.glob('../assets/Slider/*.jpeg', { eager: true, as: 'url' });
     const imageUrls = Object.values(imagesGlob);
 
     // Prepare rows
