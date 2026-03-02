@@ -5,6 +5,7 @@ import './LandingPage.css';
 import { ChevronRight, Target, Eye, ShieldCheck, Bus, Briefcase, Package, FileText } from 'lucide-react';
 import PhotoSlider from '../components/PhotoSlider';
 import ServiceSlider from '../components/ServiceSlider';
+import logoTS from '../assets/transport-solution/logo_ts.jpeg';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -138,7 +139,7 @@ const LandingPage: React.FC = () => {
                 <div className="container">
                     <div className="transport-simple-card">
                         <div className="transport-logo-wrapper">
-                            <img src="/src/assets/transport-solution/logo_ts.png" alt="Transport Solution Logo" className="transport-logo-small" />
+                            <img src="/src/assets/transport-solution/logo_ts.jpeg" alt="Transport Solution Logo" className="transport-logo-small" />
                         </div>
                         <div className="transport-text-content">
                             <h3>Transport <span className="highlight">Solution</span></h3>
