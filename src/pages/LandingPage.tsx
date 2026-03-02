@@ -12,6 +12,7 @@ const LandingPage: React.FC = () => {
     const heroRef = useRef<HTMLDivElement>(null);
     const aboutRef = useRef<HTMLDivElement>(null);
     const servicesRef = useRef<HTMLDivElement>(null);
+    const transportRef = useRef<HTMLDivElement>(null);
     const contactRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -26,7 +27,7 @@ const LandingPage: React.FC = () => {
             });
 
             // Sections Scroll Animation
-            [aboutRef, servicesRef, contactRef].forEach((ref) => {
+            [aboutRef, servicesRef, transportRef, contactRef].forEach((ref) => {
                 gsap.from(ref.current, {
                     scrollTrigger: {
                         trigger: ref.current,
@@ -129,6 +130,23 @@ const LandingPage: React.FC = () => {
                     </div>
 
                     <ServiceSlider />
+                </div>
+            </section>
+
+            {/* Transport Solution Section */}
+            <section id="transport-solution" ref={transportRef} className="section transport-section">
+                <div className="container">
+                    <div className="transport-simple-card">
+                        <div className="transport-logo-wrapper">
+                            <img src="/src/assets/transport-solution/logo_ts.png" alt="Transport Solution Logo" className="transport-logo-small" />
+                        </div>
+                        <div className="transport-text-content">
+                            <h3>Transport <span className="highlight">Solution</span></h3>
+                            <p>
+                                Nuestra plataforma <strong>Transport Solution</strong> (iOS, Android y Web) optimiza la operación de transporte especial integrando información en tiempo real, gestión de rutas y cumplimiento normativo (FUEC). Esta solución digital no solo mejora la eficiencia y productividad, sino que reduce costos operativos y eleva significativamente la seguridad y experiencia del cliente mediante el seguimiento GPS y la automatización de procesos administrativos clave.
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </section>
 

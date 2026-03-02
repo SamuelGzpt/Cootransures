@@ -37,6 +37,7 @@ const Navbar: React.FC = () => {
                         <li><a href={getLink('#inicio')}>Inicio</a></li>
                         <li><a href={getLink('#quienes-somos')}>Quiénes Somos</a></li>
                         <li><a href={getLink('#servicios')}>Servicios</a></li>
+                        <li><a href={getLink('#transport-solution')}>Transport Solution</a></li>
                         <li><Link to="/informes">Informes</Link></li>
                         <li><a href={getLink('#contactanos')} className="btn-contact">Contáctanos</a></li>
                     </ul>
@@ -59,6 +60,7 @@ const Navbar: React.FC = () => {
                     <li><a href={getLink('#inicio')} onClick={handleNavClick}>Inicio</a></li>
                     <li><a href={getLink('#quienes-somos')} onClick={handleNavClick}>Quiénes Somos</a></li>
                     <li><a href={getLink('#servicios')} onClick={handleNavClick}>Servicios</a></li>
+                    <li><a href={getLink('#transport-solution')} onClick={handleNavClick}>Transport Solution</a></li>
                     <li><Link to="/informes" onClick={handleNavClick}>Informes</Link></li>
                     <li>
                         <a href={getLink('#contactanos')} className="btn-contact-mobile" onClick={handleNavClick}>
