@@ -11,8 +11,21 @@ const AdminReportsPage: React.FC = () => {
     const [isUploading, setIsUploading] = useState(false);
 
     useEffect(() => {
+        // Check if there is a saved token to persist session (sessionStorage)
+        const savedToken = sessionStorage.getItem('cootransures_auth_token');
+        if (savedToken) {
+            setIsAuthenticated(true);
+        }
+    }, []);
+
+    useEffect(() => {
         if (isAuthenticated) {
-            reportService.fetchReports().then(setReports);
+            reportService.fetchReports().then(setReports).catch(err => {
+                console.error('Error fetching reports:', err);
+                if (err.message.includes('401') || err.message.includes('403')) {
+                    handleLogout();
+                }
+            });
         }
     }, [isAuthenticated]);
 
@@ -24,22 +37,32 @@ const AdminReportsPage: React.FC = () => {
 
         if (result.success) {
             setIsAuthenticated(true);
-            // Optionally store token for persistence
         } else {
             setError(result.message || 'Credenciales incorrectas');
         }
+    };
+
+    const handleLogout = () => {
+        sessionStorage.removeItem('cootransures_auth_token');
+        setIsAuthenticated(false);
+        setReports([]);
     };
 
     const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             setIsUploading(true);
             const file = e.target.files[0];
-            await reportService.uploadReport(file);
-            const latestReports = await reportService.fetchReports();
-            setReports(latestReports);
-            setIsUploading(false);
-            // Reset input value to allow uploading the same file again if needed
-            e.target.value = '';
+            try {
+                await reportService.uploadReport(file);
+                const latestReports = await reportService.fetchReports();
+                setReports(latestReports);
+            } catch (err: any) {
+                console.error('Upload error:', err);
+                alert(err.message || 'Error al subir el archivo');
+            } finally {
+                setIsUploading(false);
+                e.target.value = '';
+            }
         }
     };
 
@@ -87,7 +110,7 @@ const AdminReportsPage: React.FC = () => {
         <div className="admin-dashboard container section">
             <div className="dashboard-header">
                 <h2>CRM - Gestión de Informes</h2>
-                <button onClick={() => setIsAuthenticated(false)} className="btn-secondary logout-btn">Cerrar Sesión</button>
+                <button onClick={handleLogout} className="btn-secondary logout-btn">Cerrar Sesión</button>
             </div>
 
             <div className="admin-actions">
@@ -132,7 +155,7 @@ const AdminReportsPage: React.FC = () => {
                                             </div>
                                         </td>
                                         <td>{report.date}</td>
-                                        <td className="monospace">{report.id.substring(0, 8)}...</td>
+                                        <td className="monospace">{String(report.id).substring(0, 8)}...</td>
                                         <td>
                                             <button
                                                 onClick={() => handleDelete(report.id)}

@@ -111,9 +111,9 @@ const LandingPage: React.FC = () => {
                             <FileText size={20} />
                             Politicas SARLAFT
                         </a>
-                        <a href="/docs/Politicas_Coontransures.pdf" target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <a href="/docs/Politicas_Cootransures.pdf" target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                             <FileText size={20} />
-                            Politicas Coontransures
+                            Politicas Cootransures
                         </a>
                     </div>
                 </div>

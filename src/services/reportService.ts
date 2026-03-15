@@ -5,12 +5,18 @@ export interface Report {
   url: string;
 }
 
-const API_URL = 'http://localhost:3000/api/reports';
+const API_URL = '/api/reports';
 
 // --- CONFIGURACIÓN DE MODO SIMULACIÓN ---
-// Cambia esto a false cuando tengas el servidor (backend) corriendo.
-const USE_MOCK = true;
+const USE_MOCK = false;
 const STORAGE_KEY = 'cootransures_reports';
+const TOKEN_KEY = 'cootransures_auth_token';
+
+// Helper to get token for requests
+const getAuthHeaders = (): Record<string, string> => {
+  const token = sessionStorage.getItem(TOKEN_KEY);
+  return token ? { 'Authorization': `Bearer ${token}` } : {};
+};
 
 export const reportService = {
   fetchReports: async (): Promise<Report[]> => {
@@ -40,12 +46,17 @@ export const reportService = {
 
     // Real Login
     try {
-      const response = await fetch('http://localhost:3000/api/login', {
+      const response = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
       });
       const data = await response.json();
+      
+      if (data.success && data.token) {
+        sessionStorage.setItem(TOKEN_KEY, data.token);
+      }
+      
       return data;
     } catch (error) {
       console.error('Login Error:', error);
@@ -80,6 +91,7 @@ export const reportService = {
     try {
       const response = await fetch(API_URL, {
         method: 'POST',
+        headers: getAuthHeaders(),
         body: formData,
       });
 
@@ -105,6 +117,7 @@ export const reportService = {
     try {
       const response = await fetch(`${API_URL}/${id}`, {
         method: 'DELETE',
+        headers: getAuthHeaders()
       });
       return response.ok;
     } catch (error) {

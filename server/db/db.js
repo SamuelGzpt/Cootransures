@@ -1,5 +1,7 @@
 const { Pool } = require('pg');
-require('dotenv').config({ path: '../.env' }); // Adjust path if running from subfolder, or assume root
+const path = require('path');
+// Use absolute path for .env relative to this file's directory
+require('dotenv').config({ path: path.join(__dirname, '../.env') });
 
 // Create a new pool instance used to manage database connections
 const pool = new Pool({

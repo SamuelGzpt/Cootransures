@@ -10,6 +10,8 @@ const db = require('./db/db'); // Import DB connection
 require('dotenv').config();
 
 const app = express();
+// Security: Trust proxy (required for express-rate-limit behind IIS/ARR)
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 3000;
 const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
 const API_SECRET = process.env.JWT_SECRET || 'mock-token-secure';
@@ -30,6 +32,9 @@ app.use(cors({
 const globalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 100, // Limit each IP to 100 requests per windowMs
+    // Since trust proxy is set to 1, express-rate-limit will correctly use req.ip by default
+    standardHeaders: true,
+    legacyHeaders: false,
     message: 'Too many requests from this IP, please try again later.'
 });
 app.use(globalLimiter);
@@ -38,6 +43,8 @@ app.use(globalLimiter);
 const loginLimiter = rateLimit({
     windowMs: 60 * 60 * 1000, // 1 hour
     max: 5, // Limit each IP to 5 login attempts per hour
+    standardHeaders: true,
+    legacyHeaders: false,
     message: 'Too many login attempts, please try again later.'
 });
 
