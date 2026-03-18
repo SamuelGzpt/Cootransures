@@ -3,7 +3,7 @@
     min-height: 105vh;
     /* Taller for impact and to cover gaps */
     /* Fullscreen height */
-    background: linear-gradient(135deg, rgba(4, 106, 65, 0.9), rgba(3, 85, 52, 0.9)), url('../assets/Slider/FotoCarroPaisaje.jpeg');
+    background: linear-gradient(135deg, rgba(4, 106, 65, 0.9), rgba(3, 85, 52, 0.9)), url('../assets/Slider/carro_lujoso.jpeg');
     background-size: cover;
     background-position: center;
     position: relative;
@@ -160,11 +160,11 @@
 }
 
 .photo-slider .photo-item {
-    width: 400px;
-    /* Slightly adjusted width */
+    width: auto;
+    /* Let width be driven by the photo's original aspect ratio */
     height: 250px;
-    object-fit: cover;
-    /* Crop photos nicely */
+    max-width: none;
+    /* Prevent shrinking from generic img resets */
     border-radius: 12px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     flex-shrink: 0;
@@ -175,9 +175,9 @@
     object-fit: contain;
     /* Show full logo */
     background-color: transparent;
-    /* Or white if needed, depending on logo transparency */
-    width: 300px;
-    /* Distinct visual size for logo if desired */
+    width: auto;
+    min-width: 250px;
+    /* Ensure logo doesn't become too small just because its height is clipped */
     /* Remove border/shadow if desired for logo, or keep consistent */
     border: none;
     box-shadow: none;
@@ -197,12 +197,12 @@
     }
 
     .photo-slider .photo-item {
-        width: 220px;
+        width: auto;
         height: 140px;
     }
 
     .photo-slider .photo-logo {
-        width: 160px;
+        min-width: 160px;
     }
 
     /* Hide the bottom row on small screens to save vertical space */

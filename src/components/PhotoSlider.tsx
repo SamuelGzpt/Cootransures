@@ -10,49 +10,76 @@ const PhotoSlider: React.FC = () => {
         const bottom = bottomRowRef.current;
 
         if (top && bottom) {
-            // Prevent duplicate cloning if already running (React Strict Mode)
-            if (top.getAttribute('data-cloned') === 'true') return;
-            top.setAttribute('data-cloned', 'true');
-            bottom.setAttribute('data-cloned', 'true');
+            let topOriginalCount = parseInt(top.getAttribute('data-count-top') || '0', 10);
+            let bottomOriginalCount = parseInt(bottom.getAttribute('data-count-bottom') || '0', 10);
 
-            // Measure initial width (Set A)
-            // Note: In flex gap scenarios, scrollWidth might not account for the final gap if not explicit,
-            // but the difference method is safer.
-            const initialWidthTop = top.scrollWidth;
+            // Clone elements only once (protects against React Strict Mode double-invocations)
+            if (top.getAttribute('data-cloned') !== 'true') {
+                topOriginalCount = top.children.length;
+                bottomOriginalCount = bottom.children.length;
+                
+                top.setAttribute('data-cloned', 'true');
+                top.setAttribute('data-count-top', topOriginalCount.toString());
+                bottom.setAttribute('data-count-bottom', bottomOriginalCount.toString());
 
-            // Duplicate items
-            const topChildren = Array.from(top.children) as HTMLElement[];
-            const bottomChildren = Array.from(bottom.children) as HTMLElement[];
+                const topChildren = Array.from(top.children) as HTMLElement[];
+                const bottomChildren = Array.from(bottom.children) as HTMLElement[];
 
-            topChildren.forEach(child => top.appendChild(child.cloneNode(true)));
-            bottomChildren.forEach(child => bottom.appendChild(child.cloneNode(true)));
+                topChildren.forEach(child => top.appendChild(child.cloneNode(true)));
+                bottomChildren.forEach(child => bottom.appendChild(child.cloneNode(true)));
+            }
 
-            // Measure new width to get exact length of one set + one gap
-            // The scrollWidth now includes: Set A + Gaps + Set A + Gaps (roughly)
-            // The "period" is the width added.
-            const finalWidthTop = top.scrollWidth;
-            const singleSetWidth = finalWidthTop - initialWidthTop;
+            let topAnim: gsap.core.Tween;
+            let bottomAnim: gsap.core.Tween;
 
-            // Top Row: Move LEFT (0 -> -width)
-            gsap.to(top, {
-                x: -singleSetWidth,
-                duration: 90, // Even slower speed
-                ease: "linear",
-                repeat: -1
+            const setupAnimations = () => {
+                const firstOriginalTop = top.children[0] as HTMLElement;
+                const firstClonedTop = top.children[topOriginalCount] as HTMLElement;
+                
+                if (!firstOriginalTop || !firstClonedTop) return;
+                
+                // OffsetLeft gives exact distance handling any gaps between start of original and clone
+                const singleSetWidthTop = firstClonedTop.offsetLeft - firstOriginalTop.offsetLeft;
+                if (singleSetWidthTop <= 0) return;
+
+                if (topAnim) topAnim.kill();
+                topAnim = gsap.to(top, { // Add explicit fromTo maybe? Actually, just to is fine
+                    x: -singleSetWidthTop,
+                    duration: 90,
+                    ease: "linear",
+                    repeat: -1
+                });
+
+                const firstOriginalBottom = bottom.children[0] as HTMLElement;
+                const firstClonedBottom = bottom.children[bottomOriginalCount] as HTMLElement;
+                const singleSetWidthBottom = firstClonedBottom.offsetLeft - firstOriginalBottom.offsetLeft;
+
+                // Ensure bottomAnim is started from -width to 0
+                if (bottomAnim) bottomAnim.kill();
+                bottomAnim = gsap.fromTo(bottom, {
+                    x: -singleSetWidthBottom
+                }, {
+                    x: 0,
+                    duration: 90,
+                    ease: "linear",
+                    repeat: -1
+                });
+            };
+
+            // Init animations
+            setupAnimations();
+
+            // Update animations sizes when images load affecting width
+            const ro = new ResizeObserver(() => {
+                setupAnimations();
             });
+            ro.observe(top);
 
-            // Bottom Row: Move RIGHT (-width -> 0)
-            // Start at -width (visualizing the clone set)
-            // Animate to 0 (visualizing the original set)
-            // seamless jump back to -width
-            gsap.fromTo(bottom, {
-                x: -singleSetWidth
-            }, {
-                x: 0,
-                duration: 90, // Even slower speed
-                ease: "linear",
-                repeat: -1
-            });
+            return () => {
+                ro.disconnect();
+                if (topAnim) topAnim.kill();
+                if (bottomAnim) bottomAnim.kill();
+            };
         }
     }, []);
 
@@ -61,15 +88,40 @@ const PhotoSlider: React.FC = () => {
 
     // Load all jpeg images from the slider folder
     const imagesGlob = import.meta.glob('../assets/Slider/*.jpeg', { eager: true, as: 'url' });
-    const imageUrls = Object.values(imagesGlob);
+    const imageUrls = Object.values(imagesGlob) as string[];
+
+    // Shuffle images to make them varied on each load
+    const shuffledImages = React.useMemo(() => {
+        return [...imageUrls].sort(() => Math.random() - 0.5);
+    }, []);
+
+    // Split all images into two halves
+    const halfIndex = Math.ceil(shuffledImages.length / 2);
+    const topImages = shuffledImages.slice(0, halfIndex);
+    const bottomImages = shuffledImages.slice(halfIndex);
+
+    // Intercalar el logo asegurando que haya una separación adecuada (ej. mínimo 3 imágenes)
+    // para evitar que al repetirse el slider (loop) queden dos logos muy juntos.
+    const insertLogo = (images: string[], logo: string) => {
+        const result: string[] = [];
+        const gap = 4; // Insertar logo cada 4 imágenes
+        for (let i = 0; i < images.length; i++) {
+            // Aseguramos que al insertar un logo, queden suficientes imágenes hacia el final
+            // para que no choque con el primer logo del siguiente ciclo (el loop).
+            if (i % gap === 0) {
+                const remaining = images.length - i;
+                if (i === 0 || remaining >= gap - 1) {
+                    result.push(logo);
+                }
+            }
+            result.push(images[i]);
+        }
+        return result;
+    };
 
     // Prepare rows
-    // Top: 4 images + Logo
-    const topRowItems = [...imageUrls.slice(0, 4), logoUrl];
-
-    // Bottom: Logo + 4 images (taking the ones not used in top if possible, or just the next 4)
-    // If there are exactly 8 images, we take 4..8.
-    const bottomRowItems = [logoUrl, ...imageUrls.slice(4, 8)];
+    const topRowItems = insertLogo(topImages, logoUrl);
+    const bottomRowItems = insertLogo(bottomImages, logoUrl);
 
     const renderItems = (items: string[]) => items.map((src, i) => {
         const isLogo = src.includes('LOGO_final.png'); // Matches LOGO_v3.png, LOGO.png etc.

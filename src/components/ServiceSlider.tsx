@@ -5,7 +5,7 @@ import './ServiceSlider.css';
 
 // Import images
 // Import images from slider folder for better relevance
-import corporateImg from '../assets/Slider/FotoCarroBlanco.jpeg';
+import corporateImg from '../assets/Slider/carro_garaje.jpeg';
 import touristImg from '../assets/Slider/FotoCarroCascada.jpeg';
 import schoolImg from '../assets/Slider/FotoTransporteEscolar.jpeg';
 
