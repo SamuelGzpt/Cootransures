@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
+import logoFinal from '../assets/Slider/LOGO_final.png';
 import './Navbar.css';
 
 const Navbar: React.FC = () => {
@@ -29,7 +30,7 @@ const Navbar: React.FC = () => {
             <nav className="navbar">
                 <div className="container navbar-content">
                     <a href={getLink('#inicio')} className="logo">
-                        <span className="logo-text">COOTRANSURES</span>
+                        <img src={logoFinal} alt="Cootransures Logo" className="navbar-logo-img" />
                     </a>
 
                     {/* Desktop links */}

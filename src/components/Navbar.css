@@ -7,22 +7,32 @@
     position: sticky;
     top: 0;
     z-index: 1000;
-    padding: 1rem 0;
+    padding: 0;
+    /* Remove padding to let logo define the visual height */
+    display: flex;
+    align-items: center;
 }
 
 .navbar-content {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    width: 100%;
+    padding: 0 2rem;
 }
 
 .logo {
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: var(--color-primary);
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    text-decoration: none;
+}
+
+.navbar-logo-img {
+    height: 130px;
+    /* Reference size matched: Maximum legibility */
+    width: auto;
+    object-fit: contain;
+    display: block;
 }
 
 /* =====================

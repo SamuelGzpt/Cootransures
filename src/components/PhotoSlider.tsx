@@ -72,7 +72,7 @@ const PhotoSlider: React.FC = () => {
     const bottomRowItems = [logoUrl, ...imageUrls.slice(4, 8)];
 
     const renderItems = (items: string[]) => items.map((src, i) => {
-        const isLogo = src.includes('LOGO'); // Matches LOGO_v3.png, LOGO.png etc.
+        const isLogo = src.includes('LOGO_final.png'); // Matches LOGO_v3.png, LOGO.png etc.
         return (
             <img
                 key={i}

@@ -1,43 +1,47 @@
-# Script de Configuración del Firewall para Windows Server
+# Script de Configuración de Blindaje 360° Extremo para Coontrasures
 # Requiere permisos de Administrador
+# Propósito: Invisibilidad total, bloqueo de RDP y política estricta de "Cerrar Todo".
 
-Write-Host "--- Configurando Firewall de Windows ---" -ForegroundColor Cyan
+Write-Host "--- Iniciando Blindaje 360° Extremo de Coontrasures ---" -ForegroundColor Cyan
 
-# Función para verificar si una regla existe
-function Rule-Exists ($RuleName) {
-    if (Get-NetFirewallRule -DisplayName $RuleName -ErrorAction SilentlyContinue) {
-        return $true
+# 1. POLÍTICA POR DEFECTO: BLOQUEAR TODO
+# Esto asegura que cualquier puerto no mencionado explícitamente esté cerrado.
+Write-Host "Configurando Política Global: Bloquear TODO lo entrante por defecto..."
+Set-NetFirewallProfile -Profile Domain,Private,Public -DefaultInboundAction Block
+
+# Función para verificar/crear reglas
+function Set-SecureRule ($Name, $Port, $Action, $Protocol="TCP", $Direction="Inbound") {
+    if (Get-NetFirewallRule -DisplayName $Name -ErrorAction SilentlyContinue) {
+        Remove-NetFirewallRule -DisplayName $Name
     }
-    return $false
+    Write-Host "Configurando regla: $Name ($Action puerto $Port)..."
+    New-NetFirewallRule -DisplayName $Name -Direction $Direction -LocalPort $Port -Protocol $Protocol -Action $Action
 }
 
-# 1. Permitir HTTP (Puerto 80)
-if (-not (Rule-Exists "Coontrasures-HTTP")) {
-    Write-Host "Creando regla: Permitir Puerto 80 (HTTP)..."
-    New-NetFirewallRule -DisplayName "Coontrasures-HTTP" -Direction Inbound -LocalPort 80 -Protocol TCP -Action Allow
-} else {
-    Write-Host "Regla 'Coontrasures-HTTP' ya existe." -ForegroundColor Yellow
+# 2. ACCESOS PÚBLICOS MÍNIMOS (Solo la Web)
+Set-SecureRule "Coontrasures-HTTP" 80 "Allow"
+Set-SecureRule "Coontrasures-HTTPS" 443 "Allow"
+
+# 3. MODO INVISIBLE (Bloqueo de Ping/ICMP)
+if (Get-NetFirewallRule -DisplayName "Coontrasures-Invisible" -ErrorAction SilentlyContinue) {
+    Remove-NetFirewallRule -DisplayName "Coontrasures-Invisible"
+}
+Write-Host "Activando MODO INVISIBLE (Bloqueando ICMP/Ping)..."
+New-NetFirewallRule -DisplayName "Coontrasures-Invisible" -Direction Inbound -Protocol ICMPv4 -Action Block
+
+# 4. CIERRE DE PUERTOS CRÍTICOS (Backdoors)
+# AnyDesk NO necesita puertos abiertos porque usa una conexión de salida.
+# Bloqueamos RDP, Node (interno) y Postgres (interno).
+Set-SecureRule "Coontrasures-BlockRDP" 3389 "Block"
+Set-SecureRule "Coontrasures-BlockNode" 3000 "Block"
+Set-SecureRule "Coontrasures-BlockPostgres" 5432 "Block"
+
+# 5. PREVENCIÓN DE ATAQUES COMUNES (Fuerza Bruta)
+$RiskyPorts = @(21, 22, 23, 1433, 3306)
+foreach ($P in $RiskyPorts) {
+    Set-SecureRule "Coontrasures-Hardening-$P" $P "Block"
 }
 
-# 2. Permitir HTTPS (Puerto 443)
-if (-not (Rule-Exists "Coontrasures-HTTPS")) {
-    Write-Host "Creando regla: Permitir Puerto 443 (HTTPS)..."
-    New-NetFirewallRule -DisplayName "Coontrasures-HTTPS" -Direction Inbound -LocalPort 443 -Protocol TCP -Action Allow
-} else {
-    Write-Host "Regla 'Coontrasures-HTTPS' ya existe." -ForegroundColor Yellow
-}
-
-# 3. Bloquear Puerto 3000 (Node.js API) desde fuera
-#    Esto es para obligar a pasar por IIS/Nginx.
-if (-not (Rule-Exists "Coontrasures-BlockNode")) {
-    Write-Host "Creando regla: Bloquear acceso directo a Node.js (Puerto 3000 desde fuera)..."
-    New-NetFirewallRule -DisplayName "Coontrasures-BlockNode" -Direction Inbound -LocalPort 3000 -Protocol TCP -Action Block
-    
-    # Permitir localhost (loopback) explícitamente si se usa IIS como proxy local
-    # New-NetFirewallRule -DisplayName "Allow-Localhost-Node" -Direction Inbound -LocalAddress "127.0.0.1" -LocalPort 3000 -Protocol TCP -Action Allow
-} else {
-    Write-Host "Regla 'Coontrasures-BlockNode' ya existe." -ForegroundColor Yellow
-}
-
-Write-Host "--- Configuración de Firewall completada ---" -ForegroundColor Green
-Write-Host "El puerto 80 y 443 están abiertos. El puerto 3000 está bloqueado desde el exterior."
+Write-Host "--- Blindaje 360° Extremo Completado ---" -ForegroundColor Green
+Write-Host "ADVERTENCIA: RDP ha sido bloqueado. Usa AnyDesk para administración."
+Write-Host "El servidor ahora solo atiende peticiones en 80/443 y es invisible a pings."

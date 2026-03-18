@@ -19,9 +19,28 @@ const API_SECRET = process.env.JWT_SECRET || 'mock-token-secure';
 // --- Security Middleware ---
 
 // Helmet sets various HTTP headers for security
-app.use(helmet());
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"], // Needed for some React libs
+            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+            fontSrc: ["'self'", "https://fonts.gstatic.com"],
+            imgSrc: ["'self'", "data:", "blob:"],
+            connectSrc: ["'self'"],
+        },
+    },
+    xssFilter: true,
+    noSniff: true,
+    hidePoweredBy: true,
+    frameguard: { action: 'sameorigin' }
+}));
 
-// CORS configuration
+// Limit request size to prevent DoS
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+
+// CORS configuration - Allow only specific client URL
 app.use(cors({
     origin: CLIENT_URL,
     methods: ['GET', 'POST', 'DELETE'],
