@@ -133,7 +133,8 @@ app.get('/api/reports', async (req, res) => {
             id: row.id,
             name: row.title || row.filename,
             date: new Date(row.uploaded_at).toLocaleDateString(),
-            url: row.file_path || `/uploads/${row.filename}`
+            // Always return relative path so the proxy handles the host correctly
+            url: `/uploads/${row.filename}`
         }));
 
         res.json(reports);
@@ -187,7 +188,7 @@ app.post('/api/reports', authenticateToken, upload.single('report'), async (req,
 
         const title = req.body.title || req.file.originalname;
         const filename = req.file.filename;
-        const filePath = `${req.protocol}://${req.get('host')}/uploads/${filename}`;
+        const filePath = `/uploads/${filename}`;
         const size = req.file.size;
 
         // Insert into DB
@@ -253,7 +254,7 @@ app.delete('/api/reports/:id', authenticateToken, async (req, res) => {
 });
 
 // Start Server
-app.listen(PORT, () => {
-    console.log(`Server running secure on port ${PORT}`);
+app.listen(PORT, '127.0.0.1', () => {
+    console.log(`Server running secure on port ${PORT} (bound to localhost)`);
     console.log(`Allowed Client URL: ${CLIENT_URL}`);
 });
